@@ -1,0 +1,13 @@
+{
+  "project": "PastiPay",
+  "network": "Aevum Testnet",
+  "chainId": 44005,
+  "rpc": "https://rpc-test.qday.info",
+  "explorer": "https://explorer-test.qday.info",
+  "token": "0x456569838f1d43009A91ebA4263147Afd7233483",
+  "tokenSymbol": "tUSD8",
+  "contract": "0x1683e898a8a99092369d95757f8c451aaaaffbf2",
+  "deployTx": "0xde29cdddfb944641b93e14e1b342c60ea05ec4014261b22128ea2b361e689edf",
+  "deployer": "0x749C9Ccd67c3599A46c1E5C766a18d791c0c546B",
+  "deployedAt": "2026-11-26T15:13:37.646Z"
+}

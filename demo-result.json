@@ -1,0 +1,17 @@
+{
+  "contract": "0x1683e898a8a99092369d95757f8c451aaaaffbf2",
+  "issuer": "0x749C9Ccd67c3599A46c1E5C766a18d791c0c546B",
+  "payer": "0x54C1461C9Ed5fad5E9e33a37d5E86C652Ef08cB7",
+  "txs": {
+    "fundGas": "0x0ebf29634258f0d6de4f1914e0ef31e4ffeb5f59dd9b98ccbfe3a26839d95f75",
+    "fundTokens": "0xbef31b1d7a8c1aab30f4cfe698ba02d13dd94d874ce10bab79dcca7725e3a209",
+    "createInvoice": "0x3075e51bc9c86d0e272a49cae4877fd811811a705eb80ffae3bcaa2b6bc7a168",
+    "approve": "0xfeacfe92289214d20b331d063252bdc708312ac6e712ddcb30866eb38ada087e",
+    "payInvoice": "0xd2da984180ccb4932a360a95257eeff3cedb9c02505d1cb83878cf4540ead5f6"
+  },
+  "invoiceId": "0",
+  "wrongNameRejected": true,
+  "status": 1,
+  "receiptHash": "0x05f1489022827ff00fdf0b2520169c7385b9ea5a5c29ea3b0d7172357bd8493a",
+  "receiptVerified": true
+}
