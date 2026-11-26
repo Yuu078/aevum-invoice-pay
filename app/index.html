@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PastiPay — The invoice that can't be paid to the wrong person</title>
+<style>
+  :root { --ink:#0c1f1a; --teal:#0e7a5f; --teal2:#0a5c48; --mint:#e7f6f0; --warn:#b3261e; --line:#d7e5df; }
+  * { box-sizing: border-box; font-family: ui-sans-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  body { margin:0; background:#f4faf7; color:var(--ink); }
+  header { background:var(--ink); color:#fff; padding:28px 20px 22px; }
+  .wrap { max-width:860px; margin:0 auto; padding:0 16px; }
+  h1 { margin:0; font-size:34px; letter-spacing:-.5px; }
+  h1 .accent { color:#3ddc97; }
+  .tagline { opacity:.85; margin-top:6px; font-size:16px; }
+  .badge { display:inline-block; background:#123c31; border:1px solid #1f5c4a; color:#9fe8cb; border-radius:999px; padding:3px 10px; font-size:12px; margin-top:10px; }
+  main { padding:22px 0 60px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:18px; box-shadow:0 1px 3px rgba(12,31,26,.05); }
+  .card h2 { margin:0 0 4px; font-size:19px; }
+  .card p.sub { margin:0 0 14px; color:#446; font-size:14px; }
+  label { display:block; font-size:13px; font-weight:600; margin:12px 0 5px; }
+  input, textarea { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:9px; font-size:15px; background:#fbfefd; }
+  button { background:var(--teal); color:#fff; border:0; border-radius:9px; padding:12px 18px; font-size:15px; font-weight:700; cursor:pointer; }
+  button:hover { background:var(--teal2); }
+  button:disabled { background:#b9cdc6; cursor:not-allowed; }
+  button.ghost { background:#fff; color:var(--teal); border:1px solid var(--teal); }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+  .row > div { flex:1; min-width:180px; }
+  .status { font-size:13px; margin-top:10px; white-space:pre-wrap; word-break:break-all; }
+  .ok { color:var(--teal2); } .err { color:var(--warn); }
+  /* === Confirmation of Payee hero === */
+  .cop { background:var(--mint); border:2px solid var(--teal); border-radius:14px; padding:22px; text-align:center; }
+  .cop .lbl { font-size:12px; letter-spacing:2px; font-weight:700; color:var(--teal2); text-transform:uppercase; }
+  .cop .name { font-size:42px; font-weight:800; letter-spacing:-.5px; margin:8px 0 2px; }
+  .cop .addr { font-family:ui-monospace, monospace; font-size:13px; color:#446; word-break:break-all; }
+  .cop .amt { font-size:20px; font-weight:700; margin-top:10px; }
+  .cop input { text-align:center; font-size:18px; font-weight:600; max-width:460px; margin:14px auto 0; display:block; }
+  .cop .hint { font-size:13px; color:#446; margin-top:8px; }
+  .hidden { display:none; }
+  code { background:#eef4f1; padding:1px 6px; border-radius:6px; font-size:13px; }
+  footer { color:#678; font-size:13px; padding:0 0 40px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Pasti<span class="accent">Pay</span></h1>
+    <div class="tagline">The stablecoin invoice that <b>can't be paid to the wrong person</b> — Confirmation of Payee, enforced on-chain.</div>
+    <span class="badge">Aevum Testnet · chain 44005 · settles in tUSD8</span>
+    <span class="badge" id="connBadge">wallet: not connected</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <h2>1 · Create an invoice</h2>
+    <p class="sub">You are the payee. Your name is bound to your wallet address on-chain — your client can only pay after confirming it.</p>
+    <div class="row">
+      <div><label>Payer wallet address</label><input id="cPayer" placeholder="0x…"></div>
+      <div><label>Amount (tUSD8)</label><input id="cAmount" type="number" min="0" step="0.01" placeholder="250.00"></div>
+    </div>
+    <label>Your verified payee name (exactly as your client should see it)</label>
+    <input id="cName" placeholder="e.g. Sari Wulandari">
+    <label>Description</label>
+    <input id="cDesc" placeholder="Logo design + landing page (Nov 2026)">
+    <div style="margin-top:14px"><button id="btnCreate">Create invoice</button></div>
+    <div class="status" id="createStatus"></div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Pay an invoice — with Confirmation of Payee</h2>
+    <p class="sub">Load an invoice, then confirm the payee's name. The contract itself refuses payment if the name you confirm doesn't match the name on the invoice.</p>
+    <div class="row">
+      <div><label>Invoice ID</label><input id="pId" type="number" min="0" placeholder="0"></div>
+      <div><button class="ghost" id="btnLoad">Load invoice</button></div>
+    </div>
+    <div class="status" id="loadStatus"></div>
+
+    <div id="copBox" class="cop hidden" style="margin-top:16px">
+      <div class="lbl">You are paying</div>
+      <div class="name" id="copName">—</div>
+      <div class="addr" id="copAddr">—</div>
+      <div class="amt" id="copAmt">—</div>
+      <input id="copType" placeholder="Type the payee's full name to unlock payment" autocomplete="off">
+      <div class="hint">The Pay button unlocks only when the name matches the invoice exactly — and the smart contract double-checks the hash on-chain.</div>
+      <div style="margin-top:14px"><button id="btnPay" disabled>Pay invoice</button></div>
+      <div class="status" id="payStatus"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Verify a payment receipt</h2>
+    <p class="sub">Every paid invoice carries an on-chain receipt hash. Anyone can verify it — no account, no permission.</p>
+    <div class="row">
+      <div><label>Invoice ID</label><input id="vId" type="number" min="0" placeholder="0"></div>
+      <div><label>Receipt hash</label><input id="vHash" placeholder="0x…"></div>
+      <div><button class="ghost" id="btnVerify">Verify</button></div>
+    </div>
+    <div class="status" id="verifyStatus"></div>
+  </div>
+</main>
+
+<footer class="wrap">
+  Contract: <code id="contractAddr">see deployments.json</code> · Token tUSD8: <code>0x456569838f1d43009A91ebA4263147Afd7233483</code><br>
+  PastiPay · Aevum Builder Challenge #1 (QDay) · MIT License
+</footer>
+
+<script type="module">
+import { createPublicClient, createWalletClient, custom, http, defineChain,
+         parseUnits, formatUnits, keccak256, toBytes } from 'https://esm.sh/viem@2.58.7';
+
+const TUSD8 = '0x456569838f1d43009A91ebA4263147Afd7233483';
+const aevum = defineChain({ id: 44005, name: 'Aevum Testnet',
+  nativeCurrency: { name: 'tQDAY', symbol: 'tQDAY', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc-test.qday.info'] } },
+  blockExplorers: { default: { name: 'Aevum Explorer', url: 'https://explorer-test.qday.info' } } });
+
+let CONTRACT = null;
+try {
+  const d = await (await fetch('../deployments.json')).json();
+  CONTRACT = d.contract;
+  document.getElementById('contractAddr').textContent = CONTRACT;
+} catch { /* deployments.json not present yet (pre-deploy) */ }
+
+const ABI = [
+  { type:'function', name:'createInvoice', stateMutability:'nonpayable',
+    inputs:[{name:'payer',type:'address'},{name:'amount',type:'uint256'},{name:'description',type:'string'},{name:'payeeName',type:'string'}],
+    outputs:[{name:'invoiceId',type:'uint256'}] },
+  { type:'function', name:'payInvoice', stateMutability:'nonpayable',
+    inputs:[{name:'invoiceId',type:'uint256'},{name:'confirmedPayeeNameHash',type:'bytes32'}], outputs:[] },
+  { type:'function', name:'getInvoice', stateMutability:'view', inputs:[{name:'invoiceId',type:'uint256'}],
+    outputs:[{ name:'', type:'tuple', components:[
+      {name:'issuer',type:'address'},{name:'payer',type:'address'},{name:'amount',type:'uint256'},
+      {name:'description',type:'string'},{name:'payeeName',type:'string'},{name:'payeeNameHash',type:'bytes32'},
+      {name:'status',type:'uint8'},{name:'createdAt',type:'uint256'},{name:'paidAt',type:'uint256'},{name:'receiptHash',type:'bytes32'} ]}] },
+  { type:'function', name:'verifyReceipt', stateMutability:'view',
+    inputs:[{name:'invoiceId',type:'uint256'},{name:'receiptHash',type:'bytes32'}], outputs:[{name:'',type:'bool'}] },
+];
+const ERC20 = [
+  { type:'function', name:'approve', stateMutability:'nonpayable', inputs:[{name:'s',type:'address'},{name:'a',type:'uint256'}], outputs:[{name:'',type:'bool'}] },
+];
+
+const pub = createPublicClient({ chain: aevum, transport: http() });
+const $ = (id) => document.getElementById(id);
+const setStatus = (id, msg, cls='') => { const el = $(id); el.textContent = msg; el.className = 'status ' + cls; };
+
+async function wallet() {
+  if (!window.ethereum) throw new Error('No EIP-1193 wallet found. Install MetaMask to transact; read-only lookups still work.');
+  const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+  $('connBadge').textContent = 'wallet: ' + account;
+  return createWalletClient({ account, chain: aevum, transport: custom(window.ethereum) });
+}
+function needContract() { if (!CONTRACT) throw new Error('Contract not deployed yet — deployments.json missing.'); }
+
+let loaded = null; // { id, invoice }
+$('btnLoad').onclick = async () => {
+  try {
+    needContract();
+    const id = BigInt($('pId').value || '0');
+    const inv = await pub.readContract({ address: CONTRACT, abi: ABI, functionName: 'getInvoice', args: [id] });
+    loaded = { id, inv };
+    setStatus('loadStatus', `Invoice #${id}: "${inv.description}" — status ${['Open','Paid','Cancelled'][inv.status]}`, 'ok');
+    $('copName').textContent = inv.payeeName;
+    $('copAddr').textContent = inv.issuer;
+    $('copAmt').textContent = formatUnits(inv.amount, 6) + ' tUSD8';
+    $('copBox').classList.remove('hidden');
+    $('copType').value = ''; $('btnPay').disabled = true;
+    if (inv.status !== 0) setStatus('payStatus', 'This invoice is not open for payment.', 'err');
+  } catch (e) { setStatus('loadStatus', e.shortMessage || e.message, 'err'); }
+};
+
+$('copType').addEventListener('input', () => {
+  if (!loaded) return;
+  // The hero gate: exact-name match enables the button; the contract re-verifies the hash on-chain.
+  $('btnPay').disabled = $('copType').value !== loaded.inv.payeeName;
+});
+
+$('btnPay').onclick = async () => {
+  try {
+    needContract();
+    const w = await wallet();
+    const { id, inv } = loaded;
+    setStatus('payStatus', 'Approving tUSD8…');
+    const aHash = await w.writeContract({ address: TUSD8, abi: ERC20, functionName: 'approve', args: [CONTRACT, inv.amount] });
+    await pub.waitForTransactionReceipt({ hash: aHash });
+    setStatus('payStatus', 'Paying — the contract checks your confirmed payee name hash…');
+    const hash = keccak256(toBytes($('copType').value));
+    const pHash = await w.writeContract({ address: CONTRACT, abi: ABI, functionName: 'payInvoice', args: [id, hash] });
+    await pub.waitForTransactionReceipt({ hash: pHash });
+    const after = await pub.readContract({ address: CONTRACT, abi: ABI, functionName: 'getInvoice', args: [id] });
+    setStatus('payStatus', `Paid. Tx ${pHash}\nReceipt hash: ${after.receiptHash}`, 'ok');
+    $('vId').value = id; $('vHash').value = after.receiptHash;
+  } catch (e) { setStatus('payStatus', e.shortMessage || e.message, 'err'); }
+};
+
+$('btnCreate').onclick = async () => {
+  try {
+    needContract();
+    const w = await wallet();
+    const hash = await w.writeContract({ address: CONTRACT, abi: ABI, functionName: 'createInvoice',
+      args: [$('cPayer').value.trim(), parseUnits($('cAmount').value || '0', 6), $('cDesc').value, $('cName').value] });
+    const r = await pub.waitForTransactionReceipt({ hash });
+    setStatus('createStatus', `Invoice created. Tx ${hash} (block ${r.blockNumber})`, 'ok');
+  } catch (e) { setStatus('createStatus', e.shortMessage || e.message, 'err'); }
+};
+
+$('btnVerify').onclick = async () => {
+  try {
+    needContract();
+    const ok = await pub.readContract({ address: CONTRACT, abi: ABI, functionName: 'verifyReceipt',
+      args: [BigInt($('vId').value || '0'), $('vHash').value.trim()] });
+    setStatus('verifyStatus', ok ? 'Receipt is VALID — this invoice was paid on-chain.' : 'Receipt does NOT match any paid invoice.', ok ? 'ok' : 'err');
+  } catch (e) { setStatus('verifyStatus', e.shortMessage || e.message, 'err'); }
+};
+</script>
+</body>
+</html>

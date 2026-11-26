@@ -1,0 +1,407 @@
+{
+  "contractName": "PastiPay",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "tokenAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPayer",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        }
+      ],
+      "name": "InvoiceNotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        }
+      ],
+      "name": "InvoiceNotOpen",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        }
+      ],
+      "name": "NotTheIssuer",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        }
+      ],
+      "name": "NotThePayer",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        }
+      ],
+      "name": "PayeeNameMismatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuer",
+          "type": "address"
+        }
+      ],
+      "name": "InvoiceCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "payer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "payeeName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "payeeNameHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "InvoiceCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "payer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "issuer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "receiptHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "paidAt",
+          "type": "uint256"
+        }
+      ],
+      "name": "InvoicePaid",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        }
+      ],
+      "name": "cancelInvoice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "payer",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "payeeName",
+          "type": "string"
+        }
+      ],
+      "name": "createInvoice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getInvoice",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "payer",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "payeeName",
+              "type": "string"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "payeeNameHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "enum PastiPay.Status",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "paidAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "receiptHash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct PastiPay.Invoice",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "payeeName",
+          "type": "string"
+        }
+      ],
+      "name": "hashPayeeName",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "invoiceCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "confirmedPayeeNameHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "payInvoice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "token",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "invoiceId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "receiptHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyReceipt",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60a0604052348015600e575f5ffd5b50604051610e16380380610e16833981016040819052602b91603b565b6001600160a01b03166080526066565b5f60208284031215604a575f5ffd5b81516001600160a01b0381168114605f575f5ffd5b9392505050565b608051610d916100855f395f818161013a01526105be0152610d915ff3fe608060405234801561000f575f5ffd5b5060043610610085575f3560e01c80639909651e116100585780639909651e146100fa578063aefc6e8e1461010f578063da9c273d14610122578063fc0c546a14610135575f5ffd5b80631346f0c41461008957806326caad99146100a45780632f504d7a146100b75780633a23cc0a146100da575b5f5ffd5b6100915f5481565b6040519081526020015b60405180910390f35b6100916100b236600461091e565b610174565b6100ca6100c536600461095d565b610196565b604051901515815260200161009b565b6100ed6100e836600461097d565b6101f3565b60405161009b9190610a0b565b61010d61010836600461095d565b610439565b005b61009161011d366004610ad0565b6106ab565b61010d61013036600461097d565b6107f4565b61015c7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b03909116815260200161009b565b5f8282604051610185929190610b66565b604051809103902090505b92915050565b5f5f5483106101a657505f610190565b5f83815260016020819052604090912090600682015460ff1660028111156101d0576101d06109d7565b1480156101e05750828160090154145b80156101eb57508215155b949350505050565b61024460408051610140810182525f808252602082018190529181018290526060808201819052608082015260a081018290529060c082019081526020015f81526020015f81526020015f81525090565b5f54821061026d57604051630bc917e760e31b8152600481018390526024015b60405180910390fd5b5f8281526001602081815260409283902083516101408101855281546001600160a01b03908116825293820154909316918301919091526002810154928201929092526003820180549192916060840191906102c890610b75565b80601f01602080910402602001604051908101604052809291908181526020018280546102f490610b75565b801561033f5780601f106103165761010080835404028352916020019161033f565b820191905f5260205f20905b81548152906001019060200180831161032257829003601f168201915b5050505050815260200160048201805461035890610b75565b80601f016020809104026020016040519081016040528092919081815260200182805461038490610b75565b80156103cf5780601f106103a6576101008083540402835291602001916103cf565b820191905f5260205f20905b8154815290600101906020018083116103b257829003601f168201915b505050918352505060058201546020820152600682015460409091019060ff166002811115610400576104006109d7565b6002811115610411576104116109d7565b8152600782015460208201526008820154604082015260099091015460609091015292915050565b5f82815260016020526040902080546001600160a01b031661047157604051630bc917e760e31b815260048101849052602401610264565b5f600682015460ff16600281111561048b5761048b6109d7565b146104ac57604051631e50106d60e01b815260048101849052602401610264565b60018101546001600160a01b031633146104e157604051626ed1cf60e11b815260048101849052336024820152604401610264565b8060050154821461050857604051631c993d5560e31b815260048101849052602401610264565b60068101805460ff191660019081179091554260088301819055908201548254600284015460408051602081018990526001600160a01b0394851691810191909152929091166060830152608082015260a08101919091524660c08201525f9060e00160408051808303601f1901815290829052805160209091012060098401819055835460028501546323b872dd60e01b84523360048501526001600160a01b03918216602485015260448401529092505f917f0000000000000000000000000000000000000000000000000000000000000000909116906323b872dd906064016020604051808303815f875af1158015610606573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061062a9190610bad565b90508061064a576040516312171d8360e31b815260040160405180910390fd5b82546002840154600885015460408051928352602083018690528201526001600160a01b0390911690339087907fa787c46a7428f92e0f925b7b2ba9a6b797ae44eb10fb61b319708fe7e18b13119060600160405180910390a45050505050565b5f855f036106cc5760405163162908e360e11b815260040160405180910390fd5b6001600160a01b0387166106f357604051638eb5b89160e01b815260040160405180910390fd5b5f8054908061070183610bd3565b9190505590505f8383604051610718929190610b66565b60408051918290039091205f848152600160208190529290208054336001600160a01b031991821617825592810180549093166001600160a01b038c161790925560028201899055915060038101610771878983610c62565b5060048101610781858783610c62565b506005810182905560068101805460ff191690554260078201556040516001600160a01b038a1690339085907f87a26d0c09f2d0324f0671358d45afcad63182e1e725a26613a533cfe474a1ff906107e0908d908b908b908a90610d1d565b60405180910390a450509695505050505050565b5f81815260016020526040902080546001600160a01b031661082c57604051630bc917e760e31b815260048101839052602401610264565b80546001600160a01b0316331461085f57604051631d4a72f360e11b815260048101839052336024820152604401610264565b5f600682015460ff166002811115610879576108796109d7565b1461089a57604051631e50106d60e01b815260048101839052602401610264565b60068101805460ff19166002179055604051339083907f1893bd55c53ca5d28463267b3794ea27b1c3fc3b0cc5f86e0c5b613ad4156f08905f90a35050565b5f5f83601f8401126108e9575f5ffd5b50813567ffffffffffffffff811115610900575f5ffd5b602083019150836020828501011115610917575f5ffd5b9250929050565b5f5f6020838503121561092f575f5ffd5b823567ffffffffffffffff811115610945575f5ffd5b610951858286016108d9565b90969095509350505050565b5f5f6040838503121561096e575f5ffd5b50508035926020909101359150565b5f6020828403121561098d575f5ffd5b5035919050565b5f81518084525f5b818110156109b85760208185018101518683018201520161099c565b505f602082860101526020601f19601f83011685010191505092915050565b634e487b7160e01b5f52602160045260245ffd5b60038110610a0757634e487b7160e01b5f52602160045260245ffd5b9052565b60208152610a256020820183516001600160a01b03169052565b5f6020830151610a4060408401826001600160a01b03169052565b506040830151606083015260608301516101406080840152610a66610160840182610994565b90506080840151601f198483030160a0850152610a838282610994565b91505060a084015160c084015260c0840151610aa260e08501826109eb565b5060e08401516101008401526101008401516101208401526101208401516101408401528091505092915050565b5f5f5f5f5f5f60808789031215610ae5575f5ffd5b86356001600160a01b0381168114610afb575f5ffd5b955060208701359450604087013567ffffffffffffffff811115610b1d575f5ffd5b610b2989828a016108d9565b909550935050606087013567ffffffffffffffff811115610b48575f5ffd5b610b5489828a016108d9565b979a9699509497509295939492505050565b818382375f9101908152919050565b600181811c90821680610b8957607f821691505b602082108103610ba757634e487b7160e01b5f52602260045260245ffd5b50919050565b5f60208284031215610bbd575f5ffd5b81518015158114610bcc575f5ffd5b9392505050565b5f60018201610bf057634e487b7160e01b5f52601160045260245ffd5b5060010190565b634e487b7160e01b5f52604160045260245ffd5b601f821115610c5d5782821115610c5d57805f5260205f20601f840160051c6020851015610c3657505f5b90810190601f840160051c035f5b81811015610c59575f83820155600101610c44565b5050505b505050565b67ffffffffffffffff831115610c7a57610c7a610bf7565b610c8e83610c888354610b75565b83610c0b565b5f601f841160018114610cbf575f8515610ca85750838201355b5f19600387901b1c1916600186901b178355610d16565b5f83815260208120601f198716915b82811015610cee5786850135825560209485019460019092019101610cce565b5086821015610d0a575f1960f88860031b161c19848701351681555b505060018560011b0183555b5050505050565b84815260606020820152826060820152828460808301375f608084830101525f6080601f19601f86011683010190508260408301529594505050505056fea26469706673582212208ca5e3e5a1072d43cd939989067ff23d1b2e8089ac66c9d1e2ddedb3e3dfdbb064736f6c63430008270033"
+}
